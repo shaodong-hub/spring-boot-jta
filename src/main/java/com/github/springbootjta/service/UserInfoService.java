@@ -3,6 +3,7 @@ package com.github.springbootjta.service;
 import com.github.springbootjta.pojo.UserInfoDO;
 import com.github.springbootjta.repository.UserInfoRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +25,15 @@ import javax.annotation.Resource;
 public class UserInfoService {
 
     @Resource
+    private JmsTemplate jmsTemplate;
+
+    @Resource
     private UserInfoRepository repository;
 
     @Transactional(rollbackFor = Exception.class)
     public UserInfoDO save(UserInfoDO userInfo) {
         UserInfoDO result = repository.save(userInfo);
+        jmsTemplate.convertAndSend("user:msg:reply", userInfo.toString());
         if (userInfo.getUsername().contains("error")) {
             throw new RuntimeException("user error");
         }

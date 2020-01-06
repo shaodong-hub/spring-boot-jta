@@ -3,6 +3,8 @@ package com.github.springbootjta.controller;
 import com.github.springbootjta.pojo.UserInfoDO;
 import com.github.springbootjta.repository.UserInfoRepository;
 import com.github.springbootjta.service.UserInfoService;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,11 +31,21 @@ public class UserInfoController {
     private UserInfoService service;
 
     @Resource
+    private JmsTemplate jmsTemplate;
+
+    @Resource
     private UserInfoRepository repository;
 
     @GetMapping("/")
     public List<UserInfoDO> findAll() {
         return repository.findAll();
+    }
+
+    @Transactional
+    @GetMapping("/jms")
+    public String getUserInfoFromJms() {
+        jmsTemplate.setReceiveTimeout(1000);
+        return (String) jmsTemplate.receiveAndConvert("user:msg:reply");
     }
 
     @PostMapping("/user")
