@@ -1,9 +1,10 @@
 package com.github.springbootjta.service;
 
+import com.github.springbootjta.pojo.UserInfoDO;
+import com.github.springbootjta.repository.UserInfoRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -23,19 +24,15 @@ import javax.annotation.Resource;
 public class UserInfoService {
 
     @Resource
-    private JmsTemplate jmsTemplate;
+    private UserInfoRepository repository;
 
-    @JmsListener(destination = "user:new")
-    public void handle(String message) {
-        log.info(message);
-        jmsTemplate.convertAndSend("user:reply", "reply - " + message);
-        if (message.contains("error")) {
-            error();
+    @Transactional(rollbackFor = Exception.class)
+    public UserInfoDO save(UserInfoDO userInfo) {
+        UserInfoDO result = repository.save(userInfo);
+        if (userInfo.getUsername().contains("error")) {
+            throw new RuntimeException("user error");
         }
-    }
-
-    private void error() {
-        throw new RuntimeException("error data!");
+        return result;
     }
 
 }

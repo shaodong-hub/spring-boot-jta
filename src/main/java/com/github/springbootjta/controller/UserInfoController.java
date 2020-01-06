@@ -3,9 +3,9 @@ package com.github.springbootjta.controller;
 import com.github.springbootjta.pojo.UserInfoDO;
 import com.github.springbootjta.repository.UserInfoRepository;
 import com.github.springbootjta.service.UserInfoService;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -26,9 +26,6 @@ import java.util.List;
 public class UserInfoController {
 
     @Resource
-    private JmsTemplate jmsTemplate;
-
-    @Resource
     private UserInfoService service;
 
     @Resource
@@ -39,23 +36,9 @@ public class UserInfoController {
         return repository.findAll();
     }
 
-    @GetMapping("/data1/{data}")
-    public String send1(@PathVariable String data) {
-        service.handle(data);
-        return data;
-    }
-
-    @GetMapping("/data2/{data}")
-    public String send2(@PathVariable String data) {
-        jmsTemplate.convertAndSend("user:new", data);
-        return data;
-    }
-
-
-    @GetMapping("/data")
-    public String getData() {
-        jmsTemplate.setReceiveTimeout(2000);
-        return (String) jmsTemplate.receiveAndConvert("user:reply");
+    @PostMapping("/user")
+    public UserInfoDO save(@RequestBody UserInfoDO userInfo) {
+        return service.save(userInfo);
     }
 
 }
