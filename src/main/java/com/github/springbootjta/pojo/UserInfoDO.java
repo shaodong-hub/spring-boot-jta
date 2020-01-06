@@ -47,6 +47,4 @@ public class UserInfoDO implements Serializable {
 
     private String password;
 
-
-
 }
